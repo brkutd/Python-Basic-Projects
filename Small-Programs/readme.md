@@ -1,0 +1,3 @@
+# Small Programs
+This directory contains a set of small Python (3.x) programs with a wide variety of functions.
+Fell free to test them out!
