@@ -37,7 +37,8 @@ def data_from_json():
         positive = data['positive']
         negative = data['negative']
         stopwords = data['stopwords']
-    return positive, negative, stopwords
+        reverse = data['reverse']
+    return positive, negative, stopwords, reverse
 
 
 def clearing(data_core):
@@ -50,31 +51,51 @@ def clearing(data_core):
     return data
 
 
+def plot_create(positive, negative):
+    import matplotlib.pyplot as plt
+    data = [positive, negative]
+    slice_labels = ['Positive', 'Negative']
+    plt.pie(data, shadow=True,
+            autopct='%1.1f%%', labels=slice_labels)
+
+    plt.title("Sentiment Values")
+
+    plt.show()
+
+
 def analysis(data_core):
-    positive, negative, stopwords = data_from_json()
+    positive, negative, stopwords, reverse = data_from_json()
     data = clearing(data_core)
     val_sentiment = 0
+    val_positive = 0
+    val_negative = 0
     val_neutral = 0
     index = 0
     while index < len(data):
         if str(data[index]).lower() in positive:
-            if data[index - 1] == "not" or data[index - 1] == "don't" or data[index - 1] == "doesn't" or data[index - 1] == "dont" or data[index - 1] == "doesnt":
+            if data[index - 1] in reverse:
                 val_sentiment -= 1
+                val_negative += 1
                 index += 1
             else:
                 val_sentiment += 1
+                val_positive += 1
                 index += 1
         elif str(data[index]).lower() in negative:
-            if data[index - 1] == "not" or data[index - 1] == "don't" or data[index - 1] == "doesn't" or data[index - 1] == "dont" or data[index - 1] == "doesnt":
+            if data[index - 1] in reverse:
                 val_sentiment += 1
+                val_positive += 1
                 index += 1
             else:
                 val_sentiment -= 1
+                val_negative += 1
                 index += 1
         else:
             val_neutral += 1
             index += 1
     print("The sentiment value of the text is", val_sentiment, '\n')
+    plot_create(val_positive, val_negative)
+    return val_sentiment
 
 
 def another_text(data_core):

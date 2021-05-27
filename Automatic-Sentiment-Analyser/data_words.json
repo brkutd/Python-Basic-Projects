@@ -6919,5 +6919,12 @@
         "zealous",
         "zealously",
         "zombie"
+    ],
+    "reverse": [
+        "not",
+        "don't",
+        "doesn't",
+        "dont",
+        "doesnt"
     ]
 }
