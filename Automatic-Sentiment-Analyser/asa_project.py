@@ -41,14 +41,29 @@ def data_from_json():
     return positive, negative, stopwords, reverse
 
 
-def clearing(data_core):
-    data = []
+def clearing_no_stopwords(data_core):
+    positive, negative, stopwords, reverse = data_from_json()
+    data_with_stopwords = []
     for word in data_core:
-        data.append(
+        data_with_stopwords.append(
             word.replace(',', '').replace('!', '').replace('.', '')
                 .replace(';', '').replace(':', '').replace('?', '')
         )
+    data = []
+    for word in data_with_stopwords:
+        if word not in stopwords:
+            data.append(word)
     return data
+
+
+def clearing_with_stopwords(data_core):
+    data_with_stopwords = []
+    for word in data_core:
+        data_with_stopwords.append(
+            word.replace(',', '').replace('!', '').replace('.', '')
+                .replace(';', '').replace(':', '').replace('?', '')
+        )
+    return data_with_stopwords
 
 
 def plot_create(positive, negative):
@@ -63,9 +78,9 @@ def plot_create(positive, negative):
     plt.show()
 
 
-def analysis(data_core):
+def analysis_no_stopwords(data_core):
     positive, negative, stopwords, reverse = data_from_json()
-    data = clearing(data_core)
+    data = clearing_no_stopwords(data_core)
     val_sentiment = 0
     val_positive = 0
     val_negative = 0
@@ -93,6 +108,43 @@ def analysis(data_core):
         else:
             val_neutral += 1
             index += 1
+        index += 1
+    print("The sentiment value of the text is", val_sentiment, '\n')
+    plot_create(val_positive, val_negative)
+    return val_sentiment
+
+
+def analysis_with_stopwords(data_core):
+    positive, negative, stopwords, reverse = data_from_json()
+    data = clearing_with_stopwords(data_core)
+    val_sentiment = 0
+    val_positive = 0
+    val_negative = 0
+    val_neutral = 0
+    index = 0
+    while index < len(data):
+        if str(data[index]).lower() in positive:
+            if data[index - 1] in reverse:
+                val_sentiment -= 1
+                val_negative += 1
+                index += 1
+            else:
+                val_sentiment += 1
+                val_positive += 1
+                index += 1
+        elif str(data[index]).lower() in negative:
+            if data[index - 1] in reverse:
+                val_sentiment += 1
+                val_positive += 1
+                index += 1
+            else:
+                val_sentiment -= 1
+                val_negative += 1
+                index += 1
+        else:
+            val_neutral += 1
+            index += 1
+        index += 1
     print("The sentiment value of the text is", val_sentiment, '\n')
     plot_create(val_positive, val_negative)
     return val_sentiment
@@ -101,9 +153,7 @@ def analysis(data_core):
 def another_text(data_core):
     question = input("Do you want to analyse another text? (y/n)\n").lower()
     if question == 'y' or question == 'yes' or question == 'yup':
-        data_core = input("Please input the text here: ").split()
-        analysis(data_core)
-        another_text(data_core)
+        main_continue()
     elif question == 'n' or question == 'no' or question == 'nope':
         print("\nThank you!")
         print("Exiting...")
@@ -113,11 +163,33 @@ def another_text(data_core):
         another_text(data_core)
 
 
-def main():
+def stopwords_question():
+    question = input("Do you want to include stopwords? (y/n)\n")
+    if question == 'y' or question == 'yes' or question == 'yup':
+        return True
+    elif question == 'n' or question == 'no' or question == 'nope':
+        return False
+    else:
+        print("I don't understand.\n")
+        stopwords_question()
+
+
+def main_start():
     title_screen()
     data_core = input("Please input the text here: ").split()
-    analysis(data_core)
+    if stopwords_question():
+        analysis_with_stopwords(data_core)
+    else:
+        analysis_no_stopwords(data_core)
     another_text(data_core)
 
 
-main()
+def main_continue():
+    data_core = input("Please input the text here: ").split()
+    if stopwords_question():
+        analysis_with_stopwords(data_core)
+    else:
+        analysis_no_stopwords(data_core)
+    another_text(data_core)
+
+main_start()
