@@ -105,8 +105,7 @@ def analysis_no_stopwords(file_name_input):
                     index += 1
             else:
                 index += 1
-        print(len(data))
-        print("The sentiment value of the text is", val_sentiment, '\n')
+        verdict(val_sentiment, data)
         plot_create(val_positive, val_negative, positive_words, negative_words)
     except IOError:
         print("Error while trying to open", file_name)
@@ -151,15 +150,40 @@ def analysis_with_stopwords(file_name_input):
                     index += 1
             else:
                 index += 1
-        print(len(data))
-        print("The sentiment value of the text is", val_sentiment, '\n')
+        verdict(val_sentiment, data)
         plot_create(val_positive, val_negative, positive_words, negative_words)
     except IOError:
         print("Error while trying to open", file_name)
 
 
-#def verdict(val_sentiment, data):
-#    data_length = len(data)
+def verdict(val_sentiment, data):
+    data_length = len(data)
+    if data_length > 1000:
+        if 10 > val_sentiment > 0:
+            print("The sentiment value of the text is slightly positive.")
+        elif -10 < val_sentiment < 0:
+            print("The sentiment value of the text is slightly negative.")
+        elif 10 < val_sentiment <= 20:
+            print("The sentiment value of the text is positive.")
+        elif -10 > val_sentiment >= -20:
+            print("The sentiment value of the text is negative.")
+        elif val_sentiment > 20:
+            print("The sentiment value of the text is highly positive.")
+        elif val_sentiment < -20:
+            print("The sentiment value of the text is highly negative.")
+    if data_length < 1000:
+        if 5 > val_sentiment > 0:
+            print("The sentiment value of the text is slightly positive.")
+        elif -5 < val_sentiment < 0:
+            print("The sentiment value of the text is slightly negative.")
+        elif 5 < val_sentiment <= 10:
+            print("The sentiment value of the text is positive.")
+        elif -5 > val_sentiment >= -10:
+            print("The sentiment value of the text is negative.")
+        elif val_sentiment > 10:
+            print("The sentiment value of the text is highly positive.")
+        elif val_sentiment < -10:
+            print("The sentiment value of the text is highly negative.")
 
 
 def another_text():
