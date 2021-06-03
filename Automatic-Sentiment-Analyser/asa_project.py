@@ -41,116 +41,128 @@ def data_from_json():
     return positive, negative, stopwords, reverse
 
 
-def clearing_no_stopwords(data_core):
-    positive, negative, stopwords, reverse = data_from_json()
-    data_with_stopwords = []
-    for word in data_core:
-        data_with_stopwords.append(
-            word.replace(',', '').replace('!', '').replace('.', '')
-                .replace(';', '').replace(':', '').replace('?', '')
-        )
-    data = []
-    for word in data_with_stopwords:
-        if word not in stopwords:
-            data.append(word)
-    return data
-
-
-def clearing_with_stopwords(data_core):
-    data_with_stopwords = []
-    for word in data_core:
-        data_with_stopwords.append(
-            word.replace(',', '').replace('!', '').replace('.', '')
-                .replace(';', '').replace(':', '').replace('?', '')
-        )
-    return data_with_stopwords
-
-
-def plot_create(positive, negative):
+def plot_create(positive, negative, positive_words, negative_words):
+    num_positive_words = len(positive_words)
+    num_negative_words = len(negative_words)
     import matplotlib.pyplot as plt
+    left = [2, 20]
+    heights = [num_positive_words, num_negative_words]
+    plt.subplot(121)
+    bar_width = 10
+    plt.bar(left, heights, bar_width, color=('g', 'r'))
+    plt.title('Word Frequencies')
+    plt.xticks([2, 20], ['Positive', 'Negative'])
+    plt.minorticks_on()
+    plt.grid()
+
+
     data = [positive, negative]
+    plt.subplot(122)
     slice_labels = ['Positive', 'Negative']
     plt.pie(data, shadow=True,
-            autopct='%1.1f%%', labels=slice_labels)
-
+            autopct='%1.1f%%', labels=slice_labels, colors=('g', 'r'))
     plt.title("Sentiment Values")
 
     plt.show()
 
 
-def analysis_no_stopwords(data_core):
+def analysis_no_stopwords(file_name_input):
     positive, negative, stopwords, reverse = data_from_json()
-    data = clearing_no_stopwords(data_core)
-    val_sentiment = 0
-    val_positive = 0
-    val_negative = 0
-    val_neutral = 0
-    index = 0
-    while index < len(data):
-        if str(data[index]).lower() in positive:
-            if data[index - 1] in reverse:
-                val_sentiment -= 1
-                val_negative += 1
-                index += 1
+    file_name = str(file_name_input) + '.txt'
+    try:
+        file = open(file_name, 'r')
+        text = file.read()
+        text = text.lower()
+        data = text.split()
+        data = [word.strip('.,!;()?:[]\"') for word in data]
+        file.close()
+        val_sentiment = 0
+        val_positive = 0
+        val_negative = 0
+        positive_words = []
+        negative_words = []
+        index = 0
+        while index < len(data):
+            if str(data[index]).lower() in positive:
+                if data[index - 1] in reverse:
+                    val_sentiment -= 1
+                    val_negative += 1
+                    index += 1
+                else:
+                    val_sentiment += 1
+                    val_positive += 1
+                    positive_words.append(data[index])
+                    index += 1
+            elif str(data[index]).lower() in negative:
+                if data[index - 1] in reverse:
+                    val_sentiment += 1
+                    val_positive += 1
+                    index += 1
+                else:
+                    val_sentiment -= 1
+                    val_negative += 1
+                    negative_words.append(data[index])
+                    index += 1
             else:
-                val_sentiment += 1
-                val_positive += 1
                 index += 1
-        elif str(data[index]).lower() in negative:
-            if data[index - 1] in reverse:
-                val_sentiment += 1
-                val_positive += 1
-                index += 1
-            else:
-                val_sentiment -= 1
-                val_negative += 1
-                index += 1
-        else:
-            val_neutral += 1
-            index += 1
-        index += 1
-    print("The sentiment value of the text is", val_sentiment, '\n')
-    plot_create(val_positive, val_negative)
-    return val_sentiment
+        print(len(data))
+        print("The sentiment value of the text is", val_sentiment, '\n')
+        plot_create(val_positive, val_negative, positive_words, negative_words)
+    except IOError:
+        print("Error while trying to open", file_name)
 
 
-def analysis_with_stopwords(data_core):
+def analysis_with_stopwords(file_name_input):
     positive, negative, stopwords, reverse = data_from_json()
-    data = clearing_with_stopwords(data_core)
-    val_sentiment = 0
-    val_positive = 0
-    val_negative = 0
-    val_neutral = 0
-    index = 0
-    while index < len(data):
-        if str(data[index]).lower() in positive:
-            if data[index - 1] in reverse:
-                val_sentiment -= 1
-                val_negative += 1
-                index += 1
+    file_name = str(file_name_input) + '.txt'
+    try:
+        file = open(file_name, 'r')
+        text = file.read()
+        text = text.lower()
+        data = text.split()
+        data = [word.strip('.,!;()?:[]\"') for word in data]
+        file.close()
+        val_sentiment = 0
+        val_positive = 0
+        val_negative = 0
+        positive_words = []
+        negative_words = []
+        index = 0
+        while index < len(data):
+            if data[index] in positive:
+                if data[index - 1] in reverse:
+                    val_sentiment -= 1
+                    val_negative += 1
+                    index += 1
+                else:
+                    val_sentiment += 1
+                    val_positive += 1
+                    positive_words.append(data[index])
+                    index += 1
+            elif data[index] in negative:
+                if data[index - 1] in reverse:
+                    val_sentiment += 1
+                    val_positive += 1
+                    index += 1
+                else:
+                    val_sentiment -= 1
+                    val_negative += 1
+                    negative_words.append(data[index])
+                    index += 1
             else:
-                val_sentiment += 1
-                val_positive += 1
                 index += 1
-        elif str(data[index]).lower() in negative:
-            if data[index - 1] in reverse:
-                val_sentiment += 1
-                val_positive += 1
-                index += 1
-            else:
-                val_sentiment -= 1
-                val_negative += 1
-                index += 1
-        else:
-            val_neutral += 1
-            index += 1
-        index += 1
-    print("The sentiment value of the text is", val_sentiment, '\n')
-    plot_create(val_positive, val_negative)
-    return val_sentiment
+        print(len(data))
+        print("The sentiment value of the text is", val_sentiment, '\n')
+        plot_create(val_positive, val_negative, positive_words, negative_words)
+    except IOError:
+        print("Error while trying to open", file_name)
 
 
-def another_text(data_core):
+#def verdict(val_sentiment, data):
+#    data_length = len(data)
+
+
+def another_text():
     question = input("Do you want to analyse another text? (y/n)\n").lower()
     if question == 'y' or question == 'yes' or question == 'yup':
         main_continue()
@@ -160,7 +172,7 @@ def another_text(data_core):
         exit()
     else:
         print("I don't understand.\n")
-        another_text(data_core)
+        another_text()
 
 
 def stopwords_question():
@@ -176,20 +188,20 @@ def stopwords_question():
 
 def main_start():
     title_screen()
-    data_core = input("Please input the text here: ").split()
+    file_name_input = input("Please input the name of your txt file here (omit the .txt extension): ")
     if stopwords_question():
-        analysis_with_stopwords(data_core)
+        analysis_with_stopwords(file_name_input)
     else:
-        analysis_no_stopwords(data_core)
-    another_text(data_core)
+        analysis_no_stopwords(file_name_input)
+    another_text()
 
 
 def main_continue():
-    data_core = input("Please input the text here: ").split()
+    file_name_input = input("Please input the name of your txt file here (omit the .txt extension): ")
     if stopwords_question():
-        analysis_with_stopwords(data_core)
+        analysis_with_stopwords(file_name_input)
     else:
-        analysis_no_stopwords(data_core)
-    another_text(data_core)
+        analysis_no_stopwords(file_name_input)
+    another_text()
 
 main_start()
