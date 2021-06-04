@@ -291,10 +291,12 @@ def words_frequencies(positive_words, negative_words):
     from collections import Counter
     occurrence_count_positive = Counter(positive_words)
     occurrence_count_negative = Counter(negative_words)
-    most_frequent_positive = occurrence_count_positive.most_common(1)[0][0]
-    most_frequent_negative = occurrence_count_negative.most_common(1)[0][0]
-    print("The most frequent positive word:", most_frequent_positive)
-    print("The most frequent negative word:", most_frequent_negative)
+    if occurrence_count_positive:
+        most_frequent_positive = occurrence_count_positive.most_common(1)[0][0]
+        print("The most frequent positive word:", most_frequent_positive)
+    if occurrence_count_negative:
+        most_frequent_negative = occurrence_count_negative.most_common(1)[0][0]
+        print("The most frequent negative word:", most_frequent_negative)
 
 
 def another_text():
