@@ -55,14 +55,13 @@ def plot_create(positive, negative, positive_words, negative_words):
     plt.minorticks_on()
     plt.grid()
 
-
     data = [positive, negative]
     plt.subplot(122)
     slice_labels = ['Positive', 'Negative']
     plt.pie(data, shadow=True,
             autopct='%1.1f%%', labels=slice_labels, colors=('g', 'r'))
     plt.title("Sentiment Values")
-
+    plt.savefig('plot.png')
     plt.show()
 
 
@@ -106,6 +105,7 @@ def analysis_no_stopwords(file_name_input):
             else:
                 index += 1
         verdict(val_sentiment, data)
+        words_frequencies(positive_words, negative_words)
         plot_create(val_positive, val_negative, positive_words, negative_words)
     except IOError:
         print("Error while trying to open", file_name)
@@ -151,39 +151,150 @@ def analysis_with_stopwords(file_name_input):
             else:
                 index += 1
         verdict(val_sentiment, data)
+        words_frequencies(positive_words, negative_words)
         plot_create(val_positive, val_negative, positive_words, negative_words)
     except IOError:
         print("Error while trying to open", file_name)
 
 
+def analysis_with_stopwords_keyword(data):
+    positive, negative, stopwords, reverse = data_from_json()
+    val_sentiment = 0
+    val_positive = 0
+    val_negative = 0
+    positive_words = []
+    negative_words = []
+    index = 0
+    while index < len(data):
+        if data[index] in positive:
+            if data[index - 1] in reverse:
+                val_sentiment -= 1
+                val_negative += 1
+                index += 1
+            else:
+                val_sentiment += 1
+                val_positive += 1
+                positive_words.append(data[index])
+                index += 1
+        elif data[index] in negative:
+            if data[index - 1] in reverse:
+                val_sentiment += 1
+                val_positive += 1
+                index += 1
+            else:
+                val_sentiment -= 1
+                val_negative += 1
+                negative_words.append(data[index])
+                index += 1
+        else:
+            index += 1
+    verdict(val_sentiment, data)
+    words_frequencies(positive_words, negative_words)
+    plot_create(val_positive, val_negative, positive_words, negative_words)
+
+
+def analysis_no_stopwords_keyword(data):
+    positive, negative, stopwords, reverse = data_from_json()
+    val_sentiment = 0
+    val_positive = 0
+    val_negative = 0
+    positive_words = []
+    negative_words = []
+    index = 0
+    while index < len(data):
+        if str(data[index]).lower() in positive:
+            if data[index - 1] in reverse:
+                val_sentiment -= 1
+                val_negative += 1
+                index += 1
+            else:
+                val_sentiment += 1
+                val_positive += 1
+                positive_words.append(data[index])
+                index += 1
+        elif str(data[index]).lower() in negative:
+            if data[index - 1] in reverse:
+                val_sentiment += 1
+                val_positive += 1
+                index += 1
+            else:
+                val_sentiment -= 1
+                val_negative += 1
+                negative_words.append(data[index])
+                index += 1
+        else:
+            index += 1
+    verdict(val_sentiment, data)
+    words_frequencies(positive_words, negative_words)
+    plot_create(val_positive, val_negative, positive_words, negative_words)
+
+
 def verdict(val_sentiment, data):
     data_length = len(data)
     if data_length > 1000:
-        if 10 > val_sentiment > 0:
-            print("The sentiment value of the text is slightly positive.")
-        elif -10 < val_sentiment < 0:
-            print("The sentiment value of the text is slightly negative.")
-        elif 10 < val_sentiment <= 20:
-            print("The sentiment value of the text is positive.")
-        elif -10 > val_sentiment >= -20:
-            print("The sentiment value of the text is negative.")
-        elif val_sentiment > 20:
-            print("The sentiment value of the text is highly positive.")
-        elif val_sentiment < -20:
-            print("The sentiment value of the text is highly negative.")
+        if 20 > val_sentiment > 0:
+            print("The sentiment value of the text is slightly positive. (" + str(val_sentiment) + ")")
+        elif -20 < val_sentiment < 0:
+            print("The sentiment value of the text is slightly negative. (" + str(val_sentiment) + ")")
+        elif 20 < val_sentiment <= 70:
+            print("The sentiment value of the text is positive. (" + str(val_sentiment) + ")")
+        elif -20 > val_sentiment >= -70:
+            print("The sentiment value of the text is negative. (" + str(val_sentiment) + ")")
+        elif val_sentiment > 70:
+            print("The sentiment value of the text is highly positive. (" + str(val_sentiment) + ")")
+        elif val_sentiment < -70:
+            print("The sentiment value of the text is highly negative. (" + str(val_sentiment) + ")")
     if data_length < 1000:
         if 5 > val_sentiment > 0:
-            print("The sentiment value of the text is slightly positive.")
+            print("The sentiment value of the text is slightly positive. (" + str(val_sentiment) + ")")
         elif -5 < val_sentiment < 0:
-            print("The sentiment value of the text is slightly negative.")
+            print("The sentiment value of the text is slightly negative. (" + str(val_sentiment) + ")")
         elif 5 < val_sentiment <= 10:
-            print("The sentiment value of the text is positive.")
+            print("The sentiment value of the text is positive. (" + str(val_sentiment) + ")")
         elif -5 > val_sentiment >= -10:
-            print("The sentiment value of the text is negative.")
+            print("The sentiment value of the text is negative. (" + str(val_sentiment) + ")")
         elif val_sentiment > 10:
-            print("The sentiment value of the text is highly positive.")
+            print("The sentiment value of the text is highly positive. (" + str(val_sentiment) + ")")
         elif val_sentiment < -10:
-            print("The sentiment value of the text is highly negative.")
+            print("The sentiment value of the text is highly negative. (" + str(val_sentiment) + ")")
+
+
+def create_sentences(file_name_input):
+    file_name = str(file_name_input) + '.txt'
+    try:
+        import re
+        file = open(file_name, 'r')
+        text = file.read()
+        sent = text.strip('\n,;():[]\"')
+        sent = sent.replace('\n', '')
+        sentences = re.split('[.?!]', sent)
+        return sentences
+    except IOError:
+        print("Error while trying to open", file_name)
+
+
+def search_keyword(sentences):
+    keyword = input("Please write your keyword: ")
+    sentences_with_keyword = []
+    for sent in sentences:
+        if sent.find(str(keyword)) != -1:
+            sentences_with_keyword.append(sent)
+    return sentences_with_keyword
+
+
+def sentences_into_words(sent_list):
+    word_list = [word for line in sent_list for word in line.split()]
+    return word_list
+
+
+def words_frequencies(positive_words, negative_words):
+    from collections import Counter
+    occurrence_count_positive = Counter(positive_words)
+    occurrence_count_negative = Counter(negative_words)
+    most_frequent_positive = occurrence_count_positive.most_common(1)[0][0]
+    most_frequent_negative = occurrence_count_negative.most_common(1)[0][0]
+    print("The most frequent positive word:", most_frequent_positive)
+    print("The most frequent negative word:", most_frequent_negative)
 
 
 def another_text():
@@ -210,22 +321,45 @@ def stopwords_question():
         stopwords_question()
 
 
+def keyword_question():
+    question = input("Do you want to use a keyword? (y/n)\n")
+    if question == 'y' or question == 'yes' or question == 'yup':
+        return True
+    elif question == 'n' or question == 'no' or question == 'nope':
+        return False
+    else:
+        print("I don't understand.\n")
+        keyword_question()
+
+
 def main_start():
     title_screen()
-    file_name_input = input("Please input the name of your txt file here (omit the .txt extension): ")
-    if stopwords_question():
-        analysis_with_stopwords(file_name_input)
+    file_name_input = input("\nPlease input the name of your txt file here (omit the .txt extension): ")
+    if keyword_question():
+        if stopwords_question():
+            analysis_with_stopwords_keyword(sentences_into_words(search_keyword(create_sentences(file_name_input))))
+        else:
+            analysis_no_stopwords_keyword(sentences_into_words(search_keyword(create_sentences(file_name_input))))
     else:
-        analysis_no_stopwords(file_name_input)
+        if stopwords_question():
+            analysis_with_stopwords(file_name_input)
+        else:
+            analysis_no_stopwords(file_name_input)
     another_text()
 
 
 def main_continue():
-    file_name_input = input("Please input the name of your txt file here (omit the .txt extension): ")
-    if stopwords_question():
-        analysis_with_stopwords(file_name_input)
+    file_name_input = input("\nPlease input the name of your txt file here (omit the .txt extension): ")
+    if keyword_question():
+        if stopwords_question():
+            analysis_with_stopwords_keyword(sentences_into_words(search_keyword(create_sentences(file_name_input))))
+        else:
+            analysis_no_stopwords_keyword(sentences_into_words(search_keyword(create_sentences(file_name_input))))
     else:
-        analysis_no_stopwords(file_name_input)
+        if stopwords_question():
+            analysis_with_stopwords(file_name_input)
+        else:
+            analysis_no_stopwords(file_name_input)
     another_text()
 
 main_start()
