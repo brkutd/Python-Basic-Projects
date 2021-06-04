@@ -44,25 +44,26 @@ def data_from_json():
 def plot_create(positive, negative, positive_words, negative_words):
     num_positive_words = len(positive_words)
     num_negative_words = len(negative_words)
-    import matplotlib.pyplot as plt
-    left = [2, 20]
-    heights = [num_positive_words, num_negative_words]
-    plt.subplot(121)
-    bar_width = 10
-    plt.bar(left, heights, bar_width, color=('g', 'r'))
-    plt.title('Word Frequencies')
-    plt.xticks([2, 20], ['Positive', 'Negative'])
-    plt.minorticks_on()
-    plt.grid()
+    if num_positive_words > 0 and num_negative_words > 0:
+        import matplotlib.pyplot as plt
+        left = [2, 20]
+        heights = [int(num_positive_words), int(num_negative_words)]
+        plt.subplot(121)
+        bar_width = 10
+        plt.bar(left, heights, bar_width, color=('g', 'r'))
+        plt.title('Word Frequencies')
+        plt.xticks([2, 20], ['Positive', 'Negative'])
+        plt.minorticks_on()
+        plt.grid()
 
-    data = [positive, negative]
-    plt.subplot(122)
-    slice_labels = ['Positive', 'Negative']
-    plt.pie(data, shadow=True,
-            autopct='%1.1f%%', labels=slice_labels, colors=('g', 'r'))
-    plt.title("Sentiment Values")
-    plt.savefig('plot.png')
-    plt.show()
+        data = [positive, negative]
+        plt.subplot(122)
+        slice_labels = ['Positive', 'Negative']
+        plt.pie(data, shadow=True,
+                autopct='%1.1f%%', labels=slice_labels, colors=('g', 'r'))
+        plt.title("Sentiment Values")
+        plt.savefig('plot.png')
+        plt.show()
 
 
 def analysis_no_stopwords(file_name_input):
@@ -268,6 +269,7 @@ def create_sentences(file_name_input):
         sent = text.strip('\n,;():[]\"')
         sent = sent.replace('\n', '')
         sentences = re.split('[.?!]', sent)
+        file.close()
         return sentences
     except IOError:
         print("Error while trying to open", file_name)
@@ -279,11 +281,14 @@ def search_keyword(sentences):
     for sent in sentences:
         if sent.find(str(keyword)) != -1:
             sentences_with_keyword.append(sent)
+    if not sentences_with_keyword:
+        print("Your keyword is not present in the text!")
     return sentences_with_keyword
 
 
-def sentences_into_words(sent_list):
-    word_list = [word for line in sent_list for word in line.split()]
+
+def sentences_into_words(sentences_with_keyword):
+    word_list = [word for line in sentences_with_keyword for word in line.split()]
     return word_list
 
 
