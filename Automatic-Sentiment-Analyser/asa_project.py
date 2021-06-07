@@ -1,6 +1,12 @@
 def prcyan(skk): print("\033[96m {}\033[00m".format(skk))
+
+
 def pryellow(skk): print("\033[93m {}\033[00m".format(skk))
+
+
 def prlightpurple(skk): print("\033[94m {}\033[00m".format(skk))
+
+
 def prred(skk): print("\033[91m {}\033[00m".format(skk))
 
 
@@ -66,7 +72,7 @@ def plot_create(positive, negative, positive_words, negative_words):
         plt.show()
 
 
-def analysis_no_stopwords(file_name_input):
+def analysis(file_name_input, keyword_q, stopwords_q):
     positive, negative, stopwords, reverse = data_from_json()
     file_name = str(file_name_input) + '.txt'
     try:
@@ -74,8 +80,19 @@ def analysis_no_stopwords(file_name_input):
         text = file.read()
         text = text.lower()
         data = text.split()
-        data = [word.strip('.,!;()?:[]\"') for word in data]
+        data_core = [word.strip('.,!;()?:[]\"') for word in data]
         file.close()
+        data = []
+        if keyword_q:
+            data_core = sentences_into_words(search_keyword(create_sentences(file_name_input)))
+        else:
+            data = data_core
+        if stopwords_q:
+            data = data_core
+        else:
+            for word in data_core:
+                if word not in stopwords:
+                    data.append(word)
         val_sentiment = 0
         val_positive = 0
         val_negative = 0
@@ -112,122 +129,126 @@ def analysis_no_stopwords(file_name_input):
         print("Error while trying to open", file_name)
 
 
-def analysis_with_stopwords(file_name_input):
-    positive, negative, stopwords, reverse = data_from_json()
-    file_name = str(file_name_input) + '.txt'
-    try:
-        file = open(file_name, 'r')
-        text = file.read()
-        text = text.lower()
-        data = text.split()
-        data = [word.strip('.,!;()?:[]\"') for word in data]
-        file.close()
-        val_sentiment = 0
-        val_positive = 0
-        val_negative = 0
-        positive_words = []
-        negative_words = []
-        index = 0
-        while index < len(data):
-            if data[index] in positive:
-                if data[index - 1] in reverse:
-                    val_sentiment -= 1
-                    val_negative += 1
-                    index += 1
-                else:
-                    val_sentiment += 1
-                    val_positive += 1
-                    positive_words.append(data[index])
-                    index += 1
-            elif data[index] in negative:
-                if data[index - 1] in reverse:
-                    val_sentiment += 1
-                    val_positive += 1
-                    index += 1
-                else:
-                    val_sentiment -= 1
-                    val_negative += 1
-                    negative_words.append(data[index])
-                    index += 1
-            else:
-                index += 1
-        verdict(val_sentiment, data)
-        words_frequencies(positive_words, negative_words)
-        plot_create(val_positive, val_negative, positive_words, negative_words)
-    except IOError:
-        print("Error while trying to open", file_name)
-
-
-def analysis_with_stopwords_keyword(data):
-    positive, negative, stopwords, reverse = data_from_json()
-    val_sentiment = 0
-    val_positive = 0
-    val_negative = 0
-    positive_words = []
-    negative_words = []
-    index = 0
-    while index < len(data):
-        if data[index] in positive:
-            if data[index - 1] in reverse:
-                val_sentiment -= 1
-                val_negative += 1
-                index += 1
-            else:
-                val_sentiment += 1
-                val_positive += 1
-                positive_words.append(data[index])
-                index += 1
-        elif data[index] in negative:
-            if data[index - 1] in reverse:
-                val_sentiment += 1
-                val_positive += 1
-                index += 1
-            else:
-                val_sentiment -= 1
-                val_negative += 1
-                negative_words.append(data[index])
-                index += 1
-        else:
-            index += 1
-    verdict(val_sentiment, data)
-    words_frequencies(positive_words, negative_words)
-    plot_create(val_positive, val_negative, positive_words, negative_words)
-
-
-def analysis_no_stopwords_keyword(data):
-    positive, negative, stopwords, reverse = data_from_json()
-    val_sentiment = 0
-    val_positive = 0
-    val_negative = 0
-    positive_words = []
-    negative_words = []
-    index = 0
-    while index < len(data):
-        if str(data[index]).lower() in positive:
-            if data[index - 1] in reverse:
-                val_sentiment -= 1
-                val_negative += 1
-                index += 1
-            else:
-                val_sentiment += 1
-                val_positive += 1
-                positive_words.append(data[index])
-                index += 1
-        elif str(data[index]).lower() in negative:
-            if data[index - 1] in reverse:
-                val_sentiment += 1
-                val_positive += 1
-                index += 1
-            else:
-                val_sentiment -= 1
-                val_negative += 1
-                negative_words.append(data[index])
-                index += 1
-        else:
-            index += 1
-    verdict(val_sentiment, data)
-    words_frequencies(positive_words, negative_words)
-    plot_create(val_positive, val_negative, positive_words, negative_words)
+# def analysis_with_stopwords(file_name_input):
+#     positive, negative, stopwords, reverse = data_from_json()
+#     file_name = str(file_name_input) + '.txt'
+#     try:
+#         file = open(file_name, 'r')
+#         text = file.read()
+#         text = text.lower()
+#         data = text.split()
+#         data = [word.strip('.,!;()?:[]\"') for word in data]
+#         file.close()
+#         val_sentiment = 0
+#         val_positive = 0
+#         val_negative = 0
+#         positive_words = []
+#         negative_words = []
+#         index = 0
+#         while index < len(data):
+#             if data[index] in positive:
+#                 if data[index - 1] in reverse:
+#                     val_sentiment -= 1
+#                     val_negative += 1
+#                     index += 1
+#                 else:
+#                     val_sentiment += 1
+#                     val_positive += 1
+#                     positive_words.append(data[index])
+#                     index += 1
+#             elif data[index] in negative:
+#                 if data[index - 1] in reverse:
+#                     val_sentiment += 1
+#                     val_positive += 1
+#                     index += 1
+#                 else:
+#                     val_sentiment -= 1
+#                     val_negative += 1
+#                     negative_words.append(data[index])
+#                     index += 1
+#             else:
+#                 index += 1
+#         verdict(val_sentiment, data)
+#         words_frequencies(positive_words, negative_words)
+#         plot_create(val_positive, val_negative, positive_words, negative_words)
+#     except IOError:
+#         print("Error while trying to open", file_name)
+#
+#
+# def analysis_with_stopwords_keyword(data):
+#     positive, negative, stopwords, reverse = data_from_json()
+#     val_sentiment = 0
+#     val_positive = 0
+#     val_negative = 0
+#     positive_words = []
+#     negative_words = []
+#     index = 0
+#     while index < len(data):
+#         if data[index] in positive:
+#             if data[index - 1] in reverse:
+#                 val_sentiment -= 1
+#                 val_negative += 1
+#                 index += 1
+#             else:
+#                 val_sentiment += 1
+#                 val_positive += 1
+#                 positive_words.append(data[index])
+#                 index += 1
+#         elif data[index] in negative:
+#             if data[index - 1] in reverse:
+#                 val_sentiment += 1
+#                 val_positive += 1
+#                 index += 1
+#             else:
+#                 val_sentiment -= 1
+#                 val_negative += 1
+#                 negative_words.append(data[index])
+#                 index += 1
+#         else:
+#             index += 1
+#     verdict(val_sentiment, data)
+#     words_frequencies(positive_words, negative_words)
+#     plot_create(val_positive, val_negative, positive_words, negative_words)
+#
+#
+# def analysis_no_stopwords_keyword(data):
+#     positive, negative, stopwords, reverse = data_from_json()
+#     data_no_stopwords = []
+#     for word in data:
+#         if word not in stopwords:
+#             data_no_stopwords.append(word)
+#     val_sentiment = 0
+#     val_positive = 0
+#     val_negative = 0
+#     positive_words = []
+#     negative_words = []
+#     index = 0
+#     while index < len(data_no_stopwords):
+#         if str(data_no_stopwords[index]).lower() in positive:
+#             if data[index - 1] in reverse:
+#                 val_sentiment -= 1
+#                 val_negative += 1
+#                 index += 1
+#             else:
+#                 val_sentiment += 1
+#                 val_positive += 1
+#                 positive_words.append(data[index])
+#                 index += 1
+#         elif str(data_no_stopwords[index]).lower() in negative:
+#             if data[index - 1] in reverse:
+#                 val_sentiment += 1
+#                 val_positive += 1
+#                 index += 1
+#             else:
+#                 val_sentiment -= 1
+#                 val_negative += 1
+#                 negative_words.append(data[index])
+#                 index += 1
+#         else:
+#             index += 1
+#     verdict(val_sentiment, data)
+#     words_frequencies(positive_words, negative_words)
+#     plot_create(val_positive, val_negative, positive_words, negative_words)
 
 
 def verdict(val_sentiment, data):
@@ -286,7 +307,6 @@ def search_keyword(sentences):
     return sentences_with_keyword
 
 
-
 def sentences_into_words(sentences_with_keyword):
     word_list = [word for line in sentences_with_keyword for word in line.split()]
     return word_list
@@ -307,7 +327,7 @@ def words_frequencies(positive_words, negative_words):
 def another_text():
     question = input("Do you want to analyse another text? (y/n)\n").lower()
     if question == 'y' or question == 'yes' or question == 'yup':
-        main_continue()
+        program()
     elif question == 'n' or question == 'no' or question == 'nope':
         print("\nThank you!")
         print("Exiting...")
@@ -339,34 +359,18 @@ def keyword_question():
         keyword_question()
 
 
-def main_start():
+def program():
+    file_name_input = input("\nPlease input the name of your txt file here (omit the .txt extension): ")
+    keyword_q = keyword_question()
+    stopwords_q = stopwords_question()
+    analysis(file_name_input, keyword_q, stopwords_q)
+    another_text()
+
+
+def main():
     title_screen()
-    file_name_input = input("\nPlease input the name of your txt file here (omit the .txt extension): ")
-    if keyword_question():
-        if stopwords_question():
-            analysis_with_stopwords_keyword(sentences_into_words(search_keyword(create_sentences(file_name_input))))
-        else:
-            analysis_no_stopwords_keyword(sentences_into_words(search_keyword(create_sentences(file_name_input))))
-    else:
-        if stopwords_question():
-            analysis_with_stopwords(file_name_input)
-        else:
-            analysis_no_stopwords(file_name_input)
-    another_text()
+    program()
 
 
-def main_continue():
-    file_name_input = input("\nPlease input the name of your txt file here (omit the .txt extension): ")
-    if keyword_question():
-        if stopwords_question():
-            analysis_with_stopwords_keyword(sentences_into_words(search_keyword(create_sentences(file_name_input))))
-        else:
-            analysis_no_stopwords_keyword(sentences_into_words(search_keyword(create_sentences(file_name_input))))
-    else:
-        if stopwords_question():
-            analysis_with_stopwords(file_name_input)
-        else:
-            analysis_no_stopwords(file_name_input)
-    another_text()
-
-main_start()
+if __name__ == '__main__':
+    main()
