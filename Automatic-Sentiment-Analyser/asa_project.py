@@ -76,21 +76,22 @@ def analysis(file_name_input, keyword_q, stopwords_q):
     positive, negative, stopwords, reverse = data_from_json()
     file_name = str(file_name_input) + '.txt'
     try:
-        file = open(file_name, 'r')
-        text = file.read()
-        text = text.lower()
-        data = text.split()
-        data_core = [word.strip('.,!;()?:[]\"') for word in data]
-        file.close()
         data = []
         if keyword_q:
-            data_core = sentences_into_words(search_keyword(create_sentences(file_name_input)))
+            data_start = keyword_data(file_name_input)
         else:
-            data = data_core
+            file = open(file_name, 'r')
+            text = file.read()
+            text = text.lower()
+            data_start = text.split()
+            data_core = [word.strip('.,!;()?:[]\"') for word in data_start]
+            file.close()
+            data_start = data_core
+
         if stopwords_q:
-            data = data_core
+            data = data_start
         else:
-            for word in data_core:
+            for word in data_start:
                 if word not in stopwords:
                     data.append(word)
         val_sentiment = 0
@@ -122,163 +123,42 @@ def analysis(file_name_input, keyword_q, stopwords_q):
                     index += 1
             else:
                 index += 1
-        verdict(val_sentiment, data)
+        print(verdict(val_sentiment, data))
         words_frequencies(positive_words, negative_words)
         plot_create(val_positive, val_negative, positive_words, negative_words)
+        save_analysis(file_name_input, verdict(val_sentiment, data), val_positive, val_negative, val_sentiment, keyword_q)
     except IOError:
         print("Error while trying to open", file_name)
-
-
-# def analysis_with_stopwords(file_name_input):
-#     positive, negative, stopwords, reverse = data_from_json()
-#     file_name = str(file_name_input) + '.txt'
-#     try:
-#         file = open(file_name, 'r')
-#         text = file.read()
-#         text = text.lower()
-#         data = text.split()
-#         data = [word.strip('.,!;()?:[]\"') for word in data]
-#         file.close()
-#         val_sentiment = 0
-#         val_positive = 0
-#         val_negative = 0
-#         positive_words = []
-#         negative_words = []
-#         index = 0
-#         while index < len(data):
-#             if data[index] in positive:
-#                 if data[index - 1] in reverse:
-#                     val_sentiment -= 1
-#                     val_negative += 1
-#                     index += 1
-#                 else:
-#                     val_sentiment += 1
-#                     val_positive += 1
-#                     positive_words.append(data[index])
-#                     index += 1
-#             elif data[index] in negative:
-#                 if data[index - 1] in reverse:
-#                     val_sentiment += 1
-#                     val_positive += 1
-#                     index += 1
-#                 else:
-#                     val_sentiment -= 1
-#                     val_negative += 1
-#                     negative_words.append(data[index])
-#                     index += 1
-#             else:
-#                 index += 1
-#         verdict(val_sentiment, data)
-#         words_frequencies(positive_words, negative_words)
-#         plot_create(val_positive, val_negative, positive_words, negative_words)
-#     except IOError:
-#         print("Error while trying to open", file_name)
-#
-#
-# def analysis_with_stopwords_keyword(data):
-#     positive, negative, stopwords, reverse = data_from_json()
-#     val_sentiment = 0
-#     val_positive = 0
-#     val_negative = 0
-#     positive_words = []
-#     negative_words = []
-#     index = 0
-#     while index < len(data):
-#         if data[index] in positive:
-#             if data[index - 1] in reverse:
-#                 val_sentiment -= 1
-#                 val_negative += 1
-#                 index += 1
-#             else:
-#                 val_sentiment += 1
-#                 val_positive += 1
-#                 positive_words.append(data[index])
-#                 index += 1
-#         elif data[index] in negative:
-#             if data[index - 1] in reverse:
-#                 val_sentiment += 1
-#                 val_positive += 1
-#                 index += 1
-#             else:
-#                 val_sentiment -= 1
-#                 val_negative += 1
-#                 negative_words.append(data[index])
-#                 index += 1
-#         else:
-#             index += 1
-#     verdict(val_sentiment, data)
-#     words_frequencies(positive_words, negative_words)
-#     plot_create(val_positive, val_negative, positive_words, negative_words)
-#
-#
-# def analysis_no_stopwords_keyword(data):
-#     positive, negative, stopwords, reverse = data_from_json()
-#     data_no_stopwords = []
-#     for word in data:
-#         if word not in stopwords:
-#             data_no_stopwords.append(word)
-#     val_sentiment = 0
-#     val_positive = 0
-#     val_negative = 0
-#     positive_words = []
-#     negative_words = []
-#     index = 0
-#     while index < len(data_no_stopwords):
-#         if str(data_no_stopwords[index]).lower() in positive:
-#             if data[index - 1] in reverse:
-#                 val_sentiment -= 1
-#                 val_negative += 1
-#                 index += 1
-#             else:
-#                 val_sentiment += 1
-#                 val_positive += 1
-#                 positive_words.append(data[index])
-#                 index += 1
-#         elif str(data_no_stopwords[index]).lower() in negative:
-#             if data[index - 1] in reverse:
-#                 val_sentiment += 1
-#                 val_positive += 1
-#                 index += 1
-#             else:
-#                 val_sentiment -= 1
-#                 val_negative += 1
-#                 negative_words.append(data[index])
-#                 index += 1
-#         else:
-#             index += 1
-#     verdict(val_sentiment, data)
-#     words_frequencies(positive_words, negative_words)
-#     plot_create(val_positive, val_negative, positive_words, negative_words)
 
 
 def verdict(val_sentiment, data):
     data_length = len(data)
     if data_length > 1000:
         if 20 > val_sentiment > 0:
-            print("The sentiment value of the text is slightly positive. (" + str(val_sentiment) + ")")
+            return "\nThe sentiment value of the text is slightly positive. (" + str(val_sentiment) + ")"
         elif -20 < val_sentiment < 0:
-            print("The sentiment value of the text is slightly negative. (" + str(val_sentiment) + ")")
+            return "\nThe sentiment value of the text is slightly negative. (" + str(val_sentiment) + ")"
         elif 20 < val_sentiment <= 70:
-            print("The sentiment value of the text is positive. (" + str(val_sentiment) + ")")
+            return "\nThe sentiment value of the text is positive. (" + str(val_sentiment) + ")"
         elif -20 > val_sentiment >= -70:
-            print("The sentiment value of the text is negative. (" + str(val_sentiment) + ")")
+            return "\nThe sentiment value of the text is negative. (" + str(val_sentiment) + ")"
         elif val_sentiment > 70:
-            print("The sentiment value of the text is highly positive. (" + str(val_sentiment) + ")")
+            return "\nThe sentiment value of the text is highly positive. (" + str(val_sentiment) + ")"
         elif val_sentiment < -70:
-            print("The sentiment value of the text is highly negative. (" + str(val_sentiment) + ")")
+            return "\nThe sentiment value of the text is highly negative. (" + str(val_sentiment) + ")"
     if data_length < 1000:
         if 5 > val_sentiment > 0:
-            print("The sentiment value of the text is slightly positive. (" + str(val_sentiment) + ")")
+            return "\nThe sentiment value of the text is slightly positive. (" + str(val_sentiment) + ")"
         elif -5 < val_sentiment < 0:
-            print("The sentiment value of the text is slightly negative. (" + str(val_sentiment) + ")")
+            return "\nThe sentiment value of the text is slightly negative. (" + str(val_sentiment) + ")"
         elif 5 < val_sentiment <= 10:
-            print("The sentiment value of the text is positive. (" + str(val_sentiment) + ")")
+            return "\nThe sentiment value of the text is positive. (" + str(val_sentiment) + ")"
         elif -5 > val_sentiment >= -10:
-            print("The sentiment value of the text is negative. (" + str(val_sentiment) + ")")
+            return "\nThe sentiment value of the text is negative. (" + str(val_sentiment) + ")"
         elif val_sentiment > 10:
-            print("The sentiment value of the text is highly positive. (" + str(val_sentiment) + ")")
+            return "\nThe sentiment value of the text is highly positive. (" + str(val_sentiment) + ")"
         elif val_sentiment < -10:
-            print("The sentiment value of the text is highly negative. (" + str(val_sentiment) + ")")
+            return "\nThe sentiment value of the text is highly negative. (" + str(val_sentiment) + ")"
 
 
 def create_sentences(file_name_input):
@@ -287,8 +167,8 @@ def create_sentences(file_name_input):
         import re
         file = open(file_name, 'r')
         text = file.read()
-        sent = text.strip('\n,;():[]\"')
-        sent = sent.replace('\n', '')
+        sent = text.replace('\n', ' ')
+        sent = sent.strip(';():[]\"')
         sentences = re.split('[.?!]', sent)
         file.close()
         return sentences
@@ -304,11 +184,12 @@ def search_keyword(sentences):
             sentences_with_keyword.append(sent)
     if not sentences_with_keyword:
         print("Your keyword is not present in the text!")
-    return sentences_with_keyword
+    return sentences_with_keyword, keyword
 
 
-def sentences_into_words(sentences_with_keyword):
-    word_list = [word for line in sentences_with_keyword for word in line.split()]
+def sentences_into_words(sentences_and_keyword):
+    sentences, keyword = sentences_and_keyword
+    word_list = [word for line in sentences for word in line.split()]
     return word_list
 
 
@@ -321,7 +202,14 @@ def words_frequencies(positive_words, negative_words):
         print("The most frequent positive word:", most_frequent_positive)
     if occurrence_count_negative:
         most_frequent_negative = occurrence_count_negative.most_common(1)[0][0]
-        print("The most frequent negative word:", most_frequent_negative)
+        print("The most frequent negative word:", most_frequent_negative, '\n')
+
+
+def keyword_data(file_name_input):
+    sent = create_sentences(file_name_input)
+    sent_with_keyword = search_keyword(sent)
+    keyword_list = sentences_into_words(sent_with_keyword)
+    return keyword_list
 
 
 def another_text():
@@ -357,6 +245,26 @@ def keyword_question():
     else:
         print("I don't understand.\n")
         keyword_question()
+
+
+def save_analysis(file_name, verdict_output, val_positive, val_negative, val_sentiment, keyword_q):
+    file_name_output = str(file_name) + '.txt'
+    try:
+        file = open("analysis.txt", 'w')
+        file.write("File name: " + str(file_name_output) + '\n'
+                   + str(verdict_output) + '\n' +
+                   "Positive value: " + str(val_positive) + '\n' +
+                   "Negative value: " + str(val_negative) + '\n' +
+                   "Sentiment value: " + str(val_sentiment))
+        file.close()
+        if keyword_q:
+            sent = create_sentences(file_name)
+            sent, keyword = search_keyword(sent)
+            file = open("analysis.txt", 'a')
+            file.write('\nKeyword: ' + str(keyword))
+            file.close()
+    except IOError:
+        print("Error while trying to open", file_name_output)
 
 
 def program():
