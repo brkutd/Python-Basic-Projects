@@ -76,9 +76,11 @@ def analysis(file_name_input, keyword_q, stopwords_q):
     positive, negative, stopwords, reverse = data_from_json()
     file_name = str(file_name_input) + '.txt'
     try:
+        keyword = ""
         data = []
         if keyword_q:
-            data_start = keyword_data(file_name_input)
+            keyword = input("Please write your keyword: ")
+            data_start = keyword_data(file_name_input, keyword)
         else:
             file = open(file_name, 'r')
             text = file.read()
@@ -126,7 +128,7 @@ def analysis(file_name_input, keyword_q, stopwords_q):
         print(verdict(val_sentiment, data))
         words_frequencies(positive_words, negative_words)
         plot_create(val_positive, val_negative, positive_words, negative_words)
-        save_analysis(file_name_input, verdict(val_sentiment, data), val_positive, val_negative, val_sentiment, keyword_q)
+        save_analysis(file_name_input, verdict(val_sentiment, data), val_positive, val_negative, val_sentiment, keyword_q, keyword)
     except IOError:
         print("Error while trying to open", file_name)
 
@@ -176,19 +178,18 @@ def create_sentences(file_name_input):
         print("Error while trying to open", file_name)
 
 
-def search_keyword(sentences):
-    keyword = input("Please write your keyword: ")
+def search_keyword(sentences, keyword):
     sentences_with_keyword = []
     for sent in sentences:
         if sent.find(str(keyword)) != -1:
             sentences_with_keyword.append(sent)
     if not sentences_with_keyword:
         print("Your keyword is not present in the text!")
-    return sentences_with_keyword, keyword
+    return sentences_with_keyword
 
 
 def sentences_into_words(sentences_and_keyword):
-    sentences, keyword = sentences_and_keyword
+    sentences = sentences_and_keyword
     word_list = [word for line in sentences for word in line.split()]
     return word_list
 
@@ -205,9 +206,9 @@ def words_frequencies(positive_words, negative_words):
         print("The most frequent negative word:", most_frequent_negative, '\n')
 
 
-def keyword_data(file_name_input):
+def keyword_data(file_name_input, keyword):
     sent = create_sentences(file_name_input)
-    sent_with_keyword = search_keyword(sent)
+    sent_with_keyword = search_keyword(sent, keyword)
     keyword_list = sentences_into_words(sent_with_keyword)
     return keyword_list
 
@@ -247,7 +248,7 @@ def keyword_question():
         keyword_question()
 
 
-def save_analysis(file_name, verdict_output, val_positive, val_negative, val_sentiment, keyword_q):
+def save_analysis(file_name, verdict_output, val_positive, val_negative, val_sentiment, keyword_q, keyword):
     file_name_output = str(file_name) + '.txt'
     try:
         file = open("analysis.txt", 'w')
@@ -258,8 +259,6 @@ def save_analysis(file_name, verdict_output, val_positive, val_negative, val_sen
                    "Sentiment value: " + str(val_sentiment))
         file.close()
         if keyword_q:
-            sent = create_sentences(file_name)
-            sent, keyword = search_keyword(sent)
             file = open("analysis.txt", 'a')
             file.write('\nKeyword: ' + str(keyword))
             file.close()

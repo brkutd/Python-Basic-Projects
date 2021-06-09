@@ -1,4 +1,4 @@
-# ASA (v0.7) 
+# ASA (v1.0) 
 **Automatic Sentiment Analyser** allows to investigate any kind of text in terms of its emotional markedness.
 This program calculates the sentiment of a given text and presents it to the user along with a pie chart.
 Copy your txt file into the program's main folder and run the program!  
