@@ -14,7 +14,3 @@ def descending_order(num):
     num_sorted = "".join(number)
     return int(num_sorted)
 
-
-
-
-descending_order(0)
