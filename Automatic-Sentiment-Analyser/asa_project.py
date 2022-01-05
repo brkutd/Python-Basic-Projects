@@ -108,6 +108,11 @@ def analysis(file_name_input, keyword_q, stopwords_q):
                     val_sentiment -= 1
                     val_negative += 1
                     index += 1
+                elif data[index - 1] == 'very':
+                    val_sentiment += 2
+                    val_positive += 2
+                    positive_words.append(data[index])
+                    index += 1
                 else:
                     val_sentiment += 1
                     val_positive += 1
@@ -117,6 +122,11 @@ def analysis(file_name_input, keyword_q, stopwords_q):
                 if data[index - 1] in reverse:
                     val_sentiment += 1
                     val_positive += 1
+                    index += 1
+                elif data[index - 1] == 'very':
+                    val_sentiment -= 2
+                    val_positive -= 2
+                    positive_words.append(data[index])
                     index += 1
                 else:
                     val_sentiment -= 1
